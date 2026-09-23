@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>XYXX Adverts · Ad ROAS dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ffffff; --panel:#f5f6f8; --ink:#1c2230; --muted:#5b6273; --faint:#8a90a0;
+  --line:#e3e5ea; --line-strong:#c9ccd4;
+  --denim:#2f3e9e; --denim-soft:#e8ebfa;
+  --good:#1e7b4f; --good-soft:#e3f3ea; --bad:#b3261e; --bad-soft:#fbe7e5;
+  --warn:#8a5a00; --warn-soft:#fbf0d9; --idle-soft:#eef0f3;
+  --font:"Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#15181f; --panel:#1d212a; --ink:#e8eaf0; --muted:#a3a9b8; --faint:#7c8293;
+    --line:#2b303b; --line-strong:#3c4250;
+    --denim:#9fabf5; --denim-soft:#262d52;
+    --good:#6fd3a0; --good-soft:#193528; --bad:#f29a92; --bad-soft:#3d1f1d;
+    --warn:#e9bf6b; --warn-soft:#3a2f17; --idle-soft:#252a34;
+    color-scheme:dark;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.wrap{max-width:1280px;margin:0 auto;padding:28px 20px 48px}
+h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin:0}
+.sub{color:var(--muted);font-size:14px;margin:4px 0 0}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:flex-end;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.fresh{font-size:13px;color:var(--muted);text-align:right}
+.fresh b{color:var(--ink);font-weight:500}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--good);display:inline-block;margin-right:6px;vertical-align:1px}
+.dot.old{background:var(--warn)}
+button,select,input{font:inherit;color:inherit}
+.btn{border:1px solid var(--line-strong);background:var(--paper);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:14px}
+.btn:hover{background:var(--panel)}
+:focus-visible{outline:2px solid var(--denim);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;margin:20px 0 6px;padding:4px;background:var(--panel);border-radius:10px;width:max-content;max-width:100%}
+.seg button{border:0;background:transparent;padding:8px 14px;border-radius:7px;cursor:pointer;font-size:14px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--paper);color:var(--ink);font-weight:600;box-shadow:0 0 0 1px var(--line-strong)}
+.range{font-size:13px;color:var(--muted);margin:0 0 18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.kpi{background:var(--paper);padding:14px 16px}
+.kpi .l{font-size:13px;color:var(--muted)} .kpi .v{font-size:24px;font-weight:600;margin-top:2px}
+.kpi .n{font-size:12px;color:var(--faint)}
+.kpi.hero .v{color:var(--denim)}
+.note{margin:16px 0;padding:12px 14px;border-radius:10px;background:var(--denim-soft);color:var(--denim);font-size:13.5px;max-width:84ch}
+.note.err{background:var(--bad-soft);color:var(--bad)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 12px;align-items:center}
+.filters select,.filters input[type=search]{border:1px solid var(--line-strong);background:var(--paper);border-radius:8px;padding:7px 10px;font-size:14px}
+.filters input[type=search]{min-width:220px;flex:1 1 220px}
+.chk{font-size:14px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:1040px;font-size:14px}
+th{position:sticky;top:0;background:var(--panel);text-align:right;font-weight:500;color:var(--muted);font-size:13px;padding:10px 12px;border-bottom:1px solid var(--line-strong);cursor:pointer;white-space:nowrap;user-select:none}
+th.l,td.l{text-align:left}
+th[aria-sort="descending"]::after{content:" ▾"} th[aria-sort="ascending"]::after{content:" ▴"}
+td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
+tr:last-child td{border-bottom:0}
+.adname{font-weight:500;word-break:break-word;max-width:430px}
+.meta{font-size:12.5px;color:var(--faint);margin-top:2px}
+.rowacts{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;font-size:12.5px}
+.rowacts a,.linkbtn{color:var(--denim);text-decoration:none;background:none;border:0;padding:0;cursor:pointer;font-size:12.5px}
+.rowacts a:hover,.linkbtn:hover{text-decoration:underline}
+.roas{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:120px}
+.roas b{font-weight:600}
+.bar{position:relative;width:110px;height:6px;background:var(--idle-soft);border-radius:3px}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--denim)}
+.bar i.hi{background:var(--good)} .bar i.lo{background:var(--bad)}
+.bar u{position:absolute;top:-3px;width:2px;height:12px;background:var(--ink);opacity:.55}
+.dim{color:var(--muted)}
+.pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.p-scale{background:var(--good-soft);color:var(--good)} .p-hold{background:var(--denim-soft);color:var(--denim)}
+.p-watch{background:var(--warn-soft);color:var(--warn)} .p-cut{background:var(--bad-soft);color:var(--bad)}
+.p-off{background:var(--idle-soft);color:var(--muted)}
+.eye{border:1px solid var(--line-strong);background:var(--paper);border-radius:8px;width:34px;height:34px;cursor:pointer;display:inline-grid;place-items:center;color:var(--ink)}
+.eye:hover{background:var(--panel)}
+.eye svg{width:18px;height:18px}
+.empty{padding:40px 16px;text-align:center;color:var(--muted)}
+.foot{font-size:12.5px;color:var(--faint);margin-top:14px;max-width:90ch}
+dialog{border:0;border-radius:14px;padding:0;background:var(--paper);color:var(--ink);width:min(780px,94vw);max-height:92vh;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(10,12,20,.55)}
+.dlg{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;padding:20px;max-height:92vh;overflow:auto}
+.dlg h2{font-size:17px;font-weight:600;margin:0 40px 6px 0;word-break:break-word}
+.frame{width:100%;height:580px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.nopv{height:580px;display:grid;place-items:center;text-align:center;padding:20px;color:var(--muted);border:1px dashed var(--line-strong);border-radius:10px;font-size:14px}
+.dlg .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.dlg .acts a{display:inline-block;border:1px solid var(--line-strong);border-radius:8px;padding:7px 12px;color:var(--ink);text-decoration:none;font-size:14px}
+.dlg .acts a.primary{background:var(--denim);border-color:var(--denim);color:var(--paper)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin-top:14px;font-size:14px}
+.stats span{color:var(--muted);font-size:12.5px;display:block}
+.close{position:absolute;top:10px;right:10px}
+@media (max-width:700px){.dlg{grid-template-columns:1fr}.frame,.nopv{height:480px}h1{font-size:22px}.fresh{text-align:left}}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Which ads are paying back</h1>
+    <p class="sub">XYXX Adverts · Meta ads ranked by 1-day click ROAS</p>
+  </div>
+  <div class="fresh">
+    <div id="updated"><span class="dot"></span>Loading…</div>
+    <div>Refreshes daily at 8 AM, 1 PM, 5 PM and 10 PM IST</div>
+  </div>
+</header>
+
+<div class="seg" role="group" aria-label="Timeframe" id="seg"></div>
+<p class="range" id="range"></p>
+
+<div class="kpis">
+  <div class="kpi"><div class="l">Spend</div><div class="v" id="k-spend">–</div><div class="n" id="k-spend-n"></div></div>
+  <div class="kpi hero"><div class="l">1-day click ROAS</div><div class="v" id="k-roas1">–</div><div class="n" id="k-roas1-n"></div></div>
+  <div class="kpi"><div class="l">1-day click revenue</div><div class="v" id="k-rev1">–</div><div class="n" id="k-pur1"></div></div>
+  <div class="kpi"><div class="l">7-day click ROAS</div><div class="v" id="k-roas7">–</div><div class="n" id="k-roas7-n">For comparison</div></div>
+</div>
+
+<div class="note err" id="errbox" hidden></div>
+
+<div class="filters">
+  <label class="sr" for="q">Search ad name</label>
+  <input type="search" id="q" placeholder="Search ad name or ID, e.g. Varun-Tiwari">
+  <label class="sr" for="fp">Product</label><select id="fp"></select>
+  <label class="sr" for="fv">Verdict</label><select id="fv"><option value="">All verdicts</option><option>Scale</option><option>Hold</option><option>Watch</option><option>Cut</option><option>Not running</option></select>
+  <label class="sr" for="ff">Format</label><select id="ff"><option value="">All formats</option><option>Video</option><option>Static</option><option>Carousel</option><option>Other</option></select>
+  <label class="sr" for="fm">Minimum spend</label><select id="fm"></select>
+  <label class="chk"><input type="checkbox" id="fon"> Active only</label>
+</div>
+
+<div class="tablewrap">
+<table>
+<thead><tr>
+  <th class="l" data-k="name">Ad name</th>
+  <th data-k="spend" aria-sort="descending">Spend</th>
+  <th data-k="roas1">1-day click ROAS</th>
+  <th data-k="rev1">1D click revenue</th>
+  <th data-k="pur1">1D click purchases</th>
+  <th data-k="roas7">7-day click ROAS</th>
+  <th data-k="ctr">Outbound CTR</th>
+  <th data-k="verdict">Verdict</th>
+  <th class="l" aria-label="Preview"></th>
+</tr></thead>
+<tbody id="tb"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody>
+</table>
+</div>
+<p class="foot" id="foot"></p>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlg-title">
+  <button class="btn close" type="button" id="dlg-close">Close</button>
+  <div class="dlg">
+    <div id="dlg-left"></div>
+    <div>
+      <h2 id="dlg-title"></h2>
+      <div class="meta" id="dlg-meta"></div>
+      <div class="acts"><button class="btn" type="button" id="dlg-copy">Copy ad name</button></div>
+      <div class="stats" id="dlg-stats"></div>
+      <div class="acts">
+        <a class="primary" id="dlg-open" target="_blank" rel="noopener">Open full preview</a>
+        <a id="dlg-am" target="_blank" rel="noopener">Open in Ads Manager</a>
+      </div>
+    </div>
+  </div>
+</dialog>
+<textarea id="clip" class="sr" aria-hidden="true" tabindex="-1"></textarea>
+
+<script>
+(function(){
+const $ = id => document.getElementById(id);
+const PRESET_ORDER = ["today","yesterday","last_7d","last_14d","this_month","last_30d","last_month"];
+const MIN_OPTS = {today:[0,500,2000],yesterday:[0,500,2000],last_7d:[0,2000,10000],last_14d:[0,5000,20000],this_month:[0,10000,25000,100000],last_30d:[0,10000,25000,100000],last_month:[0,10000,25000,100000]};
+let D = null, preset = "this_month", sortK = "spend", sortD = -1;
+
+function inr(x){ if(!isFinite(x)) return "–"; if(x>=1e7) return "₹"+(x/1e7).toFixed(2)+" Cr"; if(x>=1e5) return "₹"+(x/1e5).toFixed(2)+" L"; if(x>=1e3) return "₹"+(x/1e3).toFixed(1)+"K"; return "₹"+Math.round(x); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function ist(t){ return new Intl.DateTimeFormat("en-IN",{timeZone:"Asia/Kolkata",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}).format(new Date(t))+" IST"; }
+function day(s){ if(!s) return ""; const [y,m,d]=s.split("-").map(Number); return new Intl.DateTimeFormat("en-IN",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(Date.UTC(y,m-1,d))); }
+
+function productOf(adset){
+  const n=(adset||"").toLowerCase();
+  if(n.includes("remarketing")) return "Remarketing";
+  if(n.includes("sale")||n.includes("flat-50")) return "Sale campaigns";
+  if(n.includes("vest")) return "Invisible vest";
+  if(n.includes("boxer")) return "Boxer";
+  if(n.includes("outerwear")) return "Outerwear";
+  if(n.includes("buy-3")||n.includes("tactel")||n.includes("modal")) return "Modal / Tactel";
+  if(n.includes("buy-5")) return "Innerwear 5 at 999";
+  return "Other";
+}
+function formatOf(name){
+  const n=(name||"").toLowerCase();
+  if(n.includes("carousel")||n.includes("dpa")) return "Carousel";
+  if(n.includes("video")||n.includes("ugc")||n.includes("plv")) return "Video";
+  if(n.includes("static")||n.includes("gif")) return "Static";
+  return "Other";
+}
+function attrText(spec){
+  if(!spec||!spec.length) return "";
+  return spec.map(s=>{ const t=s.event_type==="CLICK_THROUGH"?"click":s.event_type==="VIEW_THROUGH"?"view":"engaged view"; return s.window_days+"D "+t; }).join(" + ");
+}
+function verdictOf(a, avg, min){
+  if(a.status && a.status!=="ACTIVE") return "Not running";
+  if(!avg) return "Watch";
+  if(a.roas1>=avg*1.2) return "Scale";
+  if(a.roas1>=avg*0.93) return "Hold";
+  if(a.roas1<avg*0.77 && a.spend>=Math.max(min,1)*5) return "Cut";
+  return "Watch";
+}
+const VCLS={Scale:"p-scale",Hold:"p-hold",Watch:"p-watch",Cut:"p-cut","Not running":"p-off"};
+function amLink(id){ return "https://www.facebook.com/adsmanager/manage/ads/edit?act="+encodeURIComponent(D.account_id)+"&selected_ad_ids="+encodeURIComponent(id); }
+
+function drawSeg(){
+  const avail = PRESET_ORDER.filter(k=>D && D.presets[k]);
+  $("seg").innerHTML = avail.map(k=>'<button type="button" data-k="'+k+'" aria-pressed="'+(k===preset)+'">'+esc(D.presets[k].label)+'</button>').join("");
+  const P = D.presets[preset];
+  $("range").textContent = P && P.since ? (P.since===P.until ? day(P.since) : day(P.since)+" to "+day(P.until))+". Spend, revenue and ROAS all use this range, in the ad account's time zone." : "";
+  const cur = $("fm").value;
+  $("fm").innerHTML = (MIN_OPTS[preset]||[0]).map(v=>'<option value="'+v+'">'+(v?"Spend over "+inr(v):"Any spend")+'</option>').join("");
+  const opts = MIN_OPTS[preset]||[0];
+  $("fm").value = opts.includes(Number(cur)) ? cur : String(opts[1]!=null?opts[1]:0);
+}
+
+function rowsFor(){
+  const P = D.presets[preset]; if(!P) return [];
+  return P.ads.map(a=>{
+    const st = (D.ads[a.id]||{}).status || "";
+    const set = D.adsets[a.adset_id]||{};
+    return Object.assign({}, a, {
+      status: st, product: productOf(a.adset), format: formatOf(a.name),
+      roas1: a.spend? a.rev1/a.spend : 0, roas7: a.spend? a.rev7/a.spend : 0,
+      setAttr: attrText(set.attribution)
+    });
+  });
+}
+
+function render(){
+  if(!D){ return; }
+  const P = D.presets[preset];
+  const rows = rowsFor();
+  const T = rows.reduce((t,a)=>{t.s+=a.spend;t.r1+=a.rev1;t.r7+=a.rev7;t.p1+=a.pur1;return t;},{s:0,r1:0,r7:0,p1:0});
+  const avg = T.s? T.r1/T.s : 0, avg7 = T.s? T.r7/T.s : 0;
+  $("k-spend").textContent = inr(T.s);
+  $("k-spend-n").textContent = rows.length+" ads with spend";
+  $("k-roas1").textContent = avg? avg.toFixed(2)+"x" : "–";
+  $("k-roas1-n").textContent = "Marker on each ROAS bar";
+  $("k-rev1").textContent = inr(T.r1);
+  $("k-pur1").textContent = Math.round(T.p1).toLocaleString("en-IN")+" purchases"+(T.p1? " · "+inr(T.s/T.p1)+" each":"");
+  $("k-roas7").textContent = avg7? avg7.toFixed(2)+"x" : "–";
+
+  const prods = [...new Set(rows.map(r=>r.product))].sort();
+  const curP = $("fp").value;
+  $("fp").innerHTML = '<option value="">All products</option>'+prods.map(p=>'<option>'+esc(p)+'</option>').join("");
+  if(prods.includes(curP)) $("fp").value = curP;
+
+  const q=$("q").value.trim().toLowerCase(), fp=$("fp").value, fv=$("fv").value, ff=$("ff").value, on=$("fon").checked, min=Number($("fm").value)||0;
+  let list = rows.map(r=>Object.assign(r,{verdict:verdictOf(r,avg,min)}))
+    .filter(r=>r.spend>=min && (!q||r.name.toLowerCase().includes(q)||r.id.includes(q)) && (!fp||r.product===fp) && (!fv||r.verdict===fv) && (!ff||r.format===ff) && (!on||r.status==="ACTIVE"));
+  list.sort((a,b)=>{ const x=a[sortK], y=b[sortK]; return (typeof x==="string"? x.localeCompare(y) : x-y)*sortD; });
+
+  const scaleMax = Math.max(4, avg*2.2);
+  if(!list.length){
+    $("tb").innerHTML = '<tr><td colspan="9" class="empty">No ads match these filters. Lower the minimum spend or clear a filter.</td></tr>';
+  } else {
+    $("tb").innerHTML = list.map(r=>{
+      const w=Math.min(r.roas1/scaleMax,1)*100, tick=Math.min(avg/scaleMax,1)*100;
+      const cls = r.roas1>=avg*1.2 ? "hi" : (r.roas1<avg*0.77 ? "lo" : "");
+      return '<tr>'+
+        '<td class="l"><div class="adname">'+esc(r.name)+'</div>'+
+        '<div class="meta">'+esc(r.product)+' · '+esc(r.format)+' · '+esc(r.adset)+'</div>'+
+        '<div class="rowacts"><button class="linkbtn" type="button" data-copy="'+esc(r.name)+'">Copy name</button>'+
+        '<a href="'+amLink(r.id)+'" target="_blank" rel="noopener">Open in Ads Manager</a>'+
+        '<span class="meta" style="margin:0">ID '+esc(r.id)+'</span></div></td>'+
+        '<td>'+inr(r.spend)+'</td>'+
+        '<td><div class="roas"><b style="color:'+(cls==="hi"?"var(--good)":cls==="lo"?"var(--bad)":"var(--ink)")+'">'+r.roas1.toFixed(2)+'x</b><span class="bar" aria-hidden="true"><i class="'+cls+'" style="width:'+w.toFixed(1)+'%"></i><u style="left:'+tick.toFixed(1)+'%"></u></span></div></td>'+
+        '<td>'+inr(r.rev1)+'</td>'+
+        '<td>'+Math.round(r.pur1).toLocaleString("en-IN")+'</td>'+
+        '<td class="dim">'+r.roas7.toFixed(2)+'x</td>'+
+        '<td>'+r.ctr.toFixed(2)+'%</td>'+
+        '<td><span class="pill '+VCLS[r.verdict]+'">'+r.verdict+'</span></td>'+
+        '<td class="l"><button class="eye" type="button" aria-label="Preview '+esc(r.name)+'" data-id="'+esc(r.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></td>'+
+      '</tr>';
+    }).join("");
+  }
+  $("foot").textContent = "Showing "+list.length+" of "+rows.length+" ads. ROAS = revenue Meta attributes within 1 day of a click, divided by spend; 7-day click is shown for comparison. Verdict compares each ad to the account's 1-day click ROAS ("+(avg?avg.toFixed(2)+"x":"–")+"): scale at 20%+ above, hold within about 7%, cut at 23%+ below with meaningful spend.";
+}
+
+function copyText(t, btn){
+  const done=()=>{ if(btn){ const o=btn.textContent; btn.textContent="Copied"; setTimeout(()=>btn.textContent=o,1400);} };
+  const fb=()=>{ const c=$("clip"); c.value=t; c.select(); try{ document.execCommand("copy"); done(); }catch(e){} };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,fb); else fb();
+}
+
+function openPreview(id){
+  const r = rowsFor().find(x=>x.id===id); if(!r) return;
+  const url = D.previews[id];
+  $("dlg-title").textContent = r.name;
+  $("dlg-meta").textContent = "Ad ID "+r.id+(r.setAttr? " · Ad set optimizes on "+r.setAttr : "");
+  $("dlg-left").innerHTML = url
+    ? '<iframe class="frame" title="Ad preview" allow="autoplay" src="'+esc(url)+'"></iframe>'
+    : '<div class="nopv">Previews are saved for the top-spending ads only. Open this one in Ads Manager to see it.</div>';
+  $("dlg-open").hidden = !url; if(url) $("dlg-open").href = url;
+  $("dlg-am").href = amLink(r.id);
+  $("dlg-copy").onclick = ()=>copyText(r.name, $("dlg-copy"));
+  $("dlg-stats").innerHTML =
+    '<div><span>Spend</span>'+inr(r.spend)+'</div>'+
+    '<div><span>1-day click ROAS</span>'+r.roas1.toFixed(2)+'x</div>'+
+    '<div><span>1D click purchases</span>'+Math.round(r.pur1).toLocaleString("en-IN")+'</div>'+
+    '<div><span>7-day click ROAS</span>'+r.roas7.toFixed(2)+'x</div>';
+  $("dlg").showModal();
+}
+
+$("tb").addEventListener("click", e=>{
+  const eye=e.target.closest(".eye"); if(eye){ openPreview(eye.dataset.id); return; }
+  const cp=e.target.closest("[data-copy]"); if(cp) copyText(cp.dataset.copy, cp);
+});
+$("dlg-close").onclick=()=>$("dlg").close();
+$("dlg").addEventListener("close",()=>{ $("dlg-left").innerHTML=""; });
+["q","fp","fv","ff","fm","fon"].forEach(id=>$(id).addEventListener(id==="q"?"input":"change",render));
+document.querySelectorAll("th[data-k]").forEach(th=>th.addEventListener("click",()=>{
+  const k=th.dataset.k; sortD = sortK===k ? -sortD : (k==="name"||k==="verdict"?1:-1); sortK=k;
+  document.querySelectorAll("th[data-k]").forEach(t=>t.removeAttribute("aria-sort"));
+  th.setAttribute("aria-sort", sortD<0?"descending":"ascending"); render();
+}));
+$("seg").addEventListener("click", e=>{
+  const b=e.target.closest("button[data-k]"); if(!b||b.dataset.k===preset) return;
+  preset=b.dataset.k; drawSeg(); render();
+  try{ localStorage.setItem("xyxx-preset", preset); }catch(e){}
+});
+
+async function load(){
+  try{
+    const r = await fetch("data.json?ts="+Date.now(), {cache:"no-store"});
+    if(!r.ok) throw new Error(r.status);
+    D = await r.json();
+  }catch(e){
+    $("updated").innerHTML = '<span class="dot old"></span>No data yet';
+    $("errbox").hidden=false;
+    $("errbox").textContent = "No data file found. Run the \"Refresh Meta ads dashboard\" workflow once from the repository's Actions tab.";
+    $("tb").innerHTML = '<tr><td colspan="9" class="empty">Waiting for the first data refresh.</td></tr>';
+    return;
+  }
+  try{ const saved=localStorage.getItem("xyxx-preset"); if(saved && D.presets[saved]) preset=saved; }catch(e){}
+  if(!D.presets[preset]) preset = PRESET_ORDER.find(k=>D.presets[k]) || preset;
+  const age = Date.now()-new Date(D.generated_at).getTime();
+  $("updated").innerHTML = '<span class="dot'+(age>6*3600e3?" old":"")+'"></span>Updated <b>'+ist(D.generated_at)+'</b>';
+  if(age>8*3600e3){ $("errbox").hidden=false; $("errbox").textContent="This data is more than 8 hours old. A scheduled refresh may have failed; check the Actions tab in GitHub."; }
+  drawSeg(); render();
+}
+load();
+setInterval(()=>{ if(document.visibilityState==="visible") load(); }, 30*60*1000);
+})();
+</script>
+</body>
+</html>
