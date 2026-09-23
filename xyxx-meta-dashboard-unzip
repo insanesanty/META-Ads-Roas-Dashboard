@@ -1,0 +1,75 @@
+# XYXX Adverts – Meta ad ROAS dashboard
+
+A web page that ranks every Meta ad in the XYXX Adverts account by **1-day click ROAS**, with a timeframe selector, full ad names, Ads Manager links and ad previews.
+
+GitHub refreshes the data at **8:00 AM, 1:00 PM, 5:00 PM and 10:00 PM IST** and republishes the page each time.
+
+```
+site/index.html                    the dashboard page
+scripts/fetch_meta.py              pulls data from the Meta Marketing API
+.github/workflows/refresh.yml      schedule + publish to GitHub Pages
+```
+
+## Before you start: who can see the page
+
+Pages from a free GitHub account are **public**. Anyone with the link can see your spend and revenue. The page tells search engines not to list it, but that doesn't stop someone who has the link. Pick one of these before going live:
+
+- **GitHub Enterprise Cloud:** make the repo private and set Pages visibility to private. Only people in your GitHub organization can open the page.
+- **Keep it public:** only if management is comfortable with ad spend and revenue being viewable by anyone who gets the URL.
+
+## Setup (about 20 minutes, one time)
+
+### 1. Get a Meta access token that doesn't expire
+
+1. Open **Meta Business Settings** and go to **Users → System users**. Add a system user with the Admin or Employee role.
+2. Click **Assign assets** and give it the **XYXX Adverts** ad account with **View performance** (read) access.
+3. Click **Generate new token** and choose your Meta app. If you don't have one, create a Business-type app at developers.facebook.com first.
+4. Tick the `ads_read` permission and set the expiry to **Never**.
+5. Copy the token. You'll only see it once.
+
+### 2. Create the GitHub repository
+
+1. Create a new repository, for example `xyxx-meta-dashboard`.
+2. Upload every file from this folder, keeping the folder structure. The `.github` folder is hidden on some computers, so make sure it's included.
+
+### 3. Add the token as a secret
+
+In the repository, go to **Settings → Secrets and variables → Actions → New repository secret**:
+
+- Name: `META_ACCESS_TOKEN`
+- Value: the token from step 1
+
+Never paste the token into any file in the repository.
+
+Optionally, under the **Variables** tab of the same page:
+
+- `META_AD_ACCOUNT_ID` sets the ad account. It defaults to `1857340177852371` (XYXX Adverts).
+- `GRAPH_API_VERSION` sets the API version. It defaults to `v23.0`. Update it when Meta retires that version (Meta announces this about two years ahead).
+
+### 4. Turn on GitHub Pages
+
+Go to **Settings → Pages → Build and deployment → Source** and choose **GitHub Actions**.
+
+### 5. Run it the first time
+
+Go to **Actions → Refresh Meta ads dashboard → Run workflow**. It takes about 3–8 minutes. When it finishes, the page address appears in the run summary. It usually looks like `https://<your-username>.github.io/xyxx-meta-dashboard/`.
+
+After this, it runs by itself four times a day.
+
+## How the data works
+
+- **1-day click ROAS** is revenue Meta attributes to purchases within 1 day of someone clicking the ad, divided by spend. It's calculated for every ad, whatever attribution setting its ad set uses. 7-day click ROAS is shown next to it for comparison.
+- Purchases use Meta's `omni_purchase` event. If that's missing, the script falls back to `purchase` and then to the pixel purchase event.
+- Timeframes are Today, Yesterday, Last 7 days, Last 14 days, This month, Last 30 days and Last month. They use the ad account's time zone, and the exact dates are shown under the buttons.
+- **Previews** are saved for the 80 highest-spending ads. You can change this by adding a `PREVIEW_LIMIT` variable. For other ads, the eye button offers the Ads Manager link. Meta's preview links expire after a while, but the four daily refreshes keep them current.
+- **Verdicts** compare each ad to the account's 1-day click ROAS for the same timeframe:
+  - Scale: 20% or more above.
+  - Hold: within about 7%.
+  - Cut: 23% or more below, with meaningful spend.
+  - Watch: everything else.
+
+## Things to know
+
+- GitHub sometimes starts scheduled runs 5–30 minutes late when its servers are busy. The page always shows when it was last updated. It shows a warning if the data is more than 8 hours old.
+- GitHub pauses scheduled workflows in public repositories after 60 days with no commits. If that happens, you'll get an email. Click **Enable workflow** in the Actions tab, or make any small commit.
+- If a run fails, open it in the Actions tab. The log says what went wrong, such as an expired token or a missing permission, without ever printing the token.
